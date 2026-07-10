@@ -1,0 +1,1625 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>CUPLUS — Склад v5</title>
+<style>
+:root{--dark:#1A3C34;--mid:#2E7D5E;--accent:#4CAF7D;--light:#EAF4EF;--white:#fff;--grey:#F5F5F5;--border:#D0E8DC;--text:#1C1C1E;--sub:#6C757D;--red:#C0392B;--amber:#E67E22;--green:#27AE60;--red-bg:#F8D7DA;--amber-bg:#FFF3CD;--green-bg:#D4EDDA;--red-t:#721C24;--amber-t:#856404;--green-t:#155724;}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--grey);color:var(--text);min-height:100vh}
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.65);z-index:1000;display:flex;align-items:center;justify-content:center;padding:20px}
+.overlay.hidden{display:none}
+.setup-box{background:white;border-radius:16px;padding:28px 24px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.3)}
+.setup-logo{font-size:44px;text-align:center;margin-bottom:10px}
+.setup-title{font-size:20px;font-weight:800;color:var(--dark);text-align:center;margin-bottom:6px}
+.setup-sub{font-size:13px;color:var(--sub);text-align:center;margin-bottom:20px;line-height:1.5}
+.setup-label{font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.setup-input{width:100%;padding:13px 14px;border:2px solid var(--border);border-radius:10px;font-size:14px;outline:none;margin-bottom:10px}
+.setup-input:focus{border-color:var(--mid)}
+.setup-hint{font-size:12px;color:var(--sub);margin-bottom:18px;background:var(--grey);padding:12px;border-radius:8px;line-height:1.6}
+.btn-setup{width:100%;padding:14px;border:none;border-radius:10px;background:var(--dark);color:white;font-size:16px;font-weight:700;cursor:pointer;margin-bottom:10px}
+.btn-danger-outline{width:100%;padding:12px;border:2px solid var(--red);border-radius:10px;background:white;color:var(--red);font-size:14px;font-weight:700;cursor:pointer}
+.header{background:var(--dark);color:white;padding:14px 16px 0;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.15)}
+.header-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.header h1{font-size:16px;font-weight:700}
+.header-right{display:flex;align-items:center;gap:6px}
+.date-badge{background:rgba(255,255,255,.15);border-radius:8px;padding:4px 8px;font-size:11px}
+.btn-url{background:rgba(255,255,255,.2);border:none;color:white;border-radius:8px;padding:5px 8px;font-size:11px;cursor:pointer;font-weight:600}
+.tabs{display:flex;overflow-x:auto;scrollbar-width:none;gap:1px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:1;min-width:48px;text-align:center;padding:8px 3px 10px;font-size:10px;font-weight:600;color:rgba(255,255,255,.5);cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:all .2s}
+.tab.active{color:white;border-bottom-color:var(--accent)}
+.tab-icon{font-size:14px;display:block;margin-bottom:1px}
+.page{padding:12px;max-width:620px;margin:0 auto;padding-bottom:30px}
+.section{display:none}.section.active{display:block}
+.card{background:white;border-radius:12px;padding:14px;box-shadow:0 2px 12px rgba(0,0,0,.08);margin-bottom:12px}
+.card-title{font-size:13px;font-weight:700;color:var(--dark);margin-bottom:12px;display:flex;align-items:center;gap:8px}
+.card-title::before{content:'';width:4px;height:16px;background:var(--accent);border-radius:2px;flex-shrink:0}
+.section-label{font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 8px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+.field select,.field input{width:100%;padding:10px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:14px;background:white;color:var(--text);outline:none;transition:border-color .2s;-webkit-appearance:none;appearance:none}
+.field select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%236C757D' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;padding-right:36px}
+.field select:focus,.field input:focus{border-color:var(--mid)}
+.optional{font-size:10px;color:var(--sub);font-weight:400;margin-left:4px}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.toggle-row{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}
+.toggle-btn{padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;background:white;color:var(--sub);font-size:13px;font-weight:600;cursor:pointer;transition:all .2s}
+.toggle-btn.active{background:var(--dark);color:white;border-color:var(--dark)}
+.zbox{background:var(--light);border-radius:10px;padding:12px;margin-bottom:10px;text-align:center;display:none}
+.zbox.show{display:block}
+.zbox-num{font-size:30px;font-weight:800;color:var(--dark)}
+.zbox-label{font-size:11px;color:var(--sub);margin-top:2px}
+.zbox.warn .zbox-num{color:var(--amber)}.zbox.danger .zbox-num{color:var(--red)}
+.over-limit{border-color:var(--red)!important;background:#fff5f5!important}
+.divider{height:1px;background:var(--border);margin:12px 0}
+.div-label{text-align:center;font-size:11px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;margin:-5px 0 12px}
+.div-label span{background:white;padding:0 8px}
+.readonly-field{background:var(--grey)!important;font-weight:700}
+.btn-main{width:100%;padding:13px;border:none;border-radius:10px;background:var(--mid);color:white;font-size:15px;font-weight:700;cursor:pointer;margin-top:4px}
+.btn-main:active{background:var(--dark)}
+.btn-outline{padding:7px 12px;border:1.5px solid var(--border);border-radius:8px;background:white;color:var(--dark);font-size:12px;font-weight:600;cursor:pointer}
+.btn-danger{padding:10px;border:none;border-radius:8px;background:var(--red-bg);color:var(--red-t);font-size:13px;font-weight:700;cursor:pointer;width:100%}
+.badge{display:inline-block;padding:3px 8px;border-radius:20px;font-size:11px;font-weight:700;white-space:nowrap}
+.b-ok{background:var(--green-bg);color:var(--green-t)}.b-warn{background:var(--amber-bg);color:var(--amber-t)}.b-buy{background:var(--red-bg);color:var(--red-t)}.b-over{background:#721C24;color:white}.b-na{background:var(--grey);color:var(--sub)}
+.stock-table{width:100%;border-collapse:collapse;font-size:12px}
+.stock-table th{background:var(--dark);color:white;padding:7px 8px;text-align:left;font-size:10px;font-weight:700}
+.stock-table td{padding:8px;border-bottom:1px solid var(--border);vertical-align:middle}
+.stock-table tr:last-child td{border-bottom:none}
+.stock-table tr:hover td{background:var(--light)}
+.mat-name{font-weight:600;color:var(--dark);font-size:13px}.mat-sub{font-size:10px;color:var(--sub)}
+.n-ok{color:var(--green);font-weight:700}.n-warn{color:var(--amber);font-weight:700}.n-bad{color:var(--red);font-weight:700}
+.pos-hdr{font-size:10px;font-weight:700;color:var(--sub);text-transform:uppercase;letter-spacing:.5px;margin:14px 0 6px;display:flex;justify-content:space-between;align-items:center}
+.cnt{background:var(--dark);color:white;border-radius:10px;padding:1px 7px;font-size:10px}
+.empty-state{text-align:center;padding:24px;color:var(--sub);font-size:13px}
+.pos-card{background:white;border-radius:10px;padding:11px 13px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:7px;border-left:4px solid var(--accent)}
+.pos-title{font-size:13px;font-weight:700;color:var(--dark);margin-bottom:4px}
+.pos-tags{display:flex;flex-wrap:wrap;gap:3px}
+.tag{background:var(--light);color:var(--mid);font-size:10px;font-weight:600;padding:2px 6px;border-radius:20px}
+.tag.hl{background:var(--dark);color:white}
+.sg{margin-bottom:16px}.sg-title{font-size:12px;font-weight:700;color:var(--dark);margin-bottom:8px;padding-bottom:4px;border-bottom:1px solid var(--border)}
+.si{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--border)}
+.si:last-child{border-bottom:none}.si span{font-size:13px}
+.btn-del{padding:4px 9px;border:none;border-radius:6px;background:var(--red-bg);color:var(--red-t);font-size:11px;font-weight:600;cursor:pointer}
+.add-row{display:flex;gap:8px;margin-top:8px}
+.add-row input{flex:1;padding:8px 12px;border:1.5px solid var(--border);border-radius:8px;font-size:13px;outline:none}
+.add-row input:focus{border-color:var(--mid)}
+.btn-add-s{padding:8px 13px;border:none;border-radius:8px;background:var(--mid);color:white;font-size:13px;font-weight:700;cursor:pointer}
+.loader{text-align:center;padding:36px;color:var(--sub);font-size:13px}
+.sp{display:inline-block;width:15px;height:15px;border:2px solid var(--border);border-top-color:var(--mid);border-radius:50%;animation:spin .7s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.rrow{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+.rrow span{font-size:11px;color:var(--sub)}
+.toast{position:fixed;top:72px;left:50%;transform:translateX(-50%) translateY(-20px);background:var(--dark);color:white;padding:10px 20px;border-radius:10px;font-size:13px;font-weight:600;opacity:0;transition:all .3s;pointer-events:none;z-index:300;white-space:nowrap}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.toast.err{background:var(--red)}.toast.ok_{background:var(--green)}
+.zc{background:white;border-radius:12px;padding:13px;box-shadow:0 2px 8px rgba(0,0,0,.08);margin-bottom:10px}
+.zm{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px}
+.zn{font-weight:700;font-size:14px;color:var(--dark)}.zs{font-size:11px;color:var(--sub)}
+.zst{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;text-align:center}
+.zsl{background:var(--grey);border-radius:8px;padding:7px}
+.zsl-l{font-size:10px;color:var(--sub);margin-bottom:2px}.zsl-v{font-weight:700;font-size:15px;color:var(--dark)}
+/* Формули */
+.formula-box{background:var(--light);border-radius:10px;padding:14px;margin-bottom:12px}
+.formula-title{font-size:13px;font-weight:700;color:var(--dark);margin-bottom:12px}
+.formula-result{background:var(--dark);color:white;border-radius:8px;padding:12px;text-align:center;margin-top:10px}
+.formula-result-num{font-size:24px;font-weight:800}
+.formula-result-label{font-size:11px;opacity:.8;margin-top:2px}
+.formula-row{display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:13px;color:var(--sub)}
+.formula-row span{white-space:nowrap}
+.cond-block{display:none}.cond-block.show{display:block}
+/* Print styles */
+@media print {
+  .header,.tabs,.btn-main,.btn-outline,.btn-url,.rrow button{display:none!important}
+  .page{padding:0}
+  .card{box-shadow:none;border:1px solid #ddd}
+  body{background:white}
+}
+</style>
+</head>
+<body>
+
+<!-- SETUP OVERLAY -->
+<div class="overlay hidden" id="overlay">
+  <div class="setup-box">
+    <div class="setup-logo">📦</div>
+    <div class="setup-title">CUPLUS — Склад</div>
+    <div class="setup-sub">Вставте URL Apps Script для підключення до Google Sheets</div>
+    <div class="setup-label">URL Apps Script</div>
+    <input class="setup-input" type="text" id="setupUrl" placeholder="https://script.google.com/macros/s/.../exec">
+    <div class="setup-hint"><b>Де взяти:</b> Google Sheets → Розширення → Apps Script → Деплой → Керувати деплоями → скопіюйте URL (/exec)</div>
+    <button class="btn-setup" onclick="saveUrl()">✅ Зберегти і підключити</button>
+    <button class="btn-danger-outline" onclick="confirmClear()">🗑️ Очистити всі тестові дані</button>
+  </div>
+</div>
+
+<!-- HEADER -->
+<div class="header">
+  <div class="header-top">
+    <h1>📦 CUPLUS — Склад</h1>
+    <div class="header-right">
+      <div class="date-badge" id="dateBadge"></div>
+      <button class="btn-url" onclick="showSetup()">⚙️ URL</button>
+    </div>
+  </div>
+  <div class="tabs">
+    <div class="tab active" onclick="sw('sklad')"><span class="tab-icon">📊</span>Склад</div>
+    <div class="tab" onclick="sw('nadx')"><span class="tab-icon">➕</span>Надходження</div>
+    <div class="tab" onclick="sw('vr')"><span class="tab-icon">🏭</span>В роботу</div>
+    <div class="tab" onclick="sw('formula')"><span class="tab-icon">🔢</span>Формули</div>
+    <div class="tab" onclick="sw('zam')"><span class="tab-icon">🛒</span>Замовлення</div>
+    <div class="tab" onclick="sw('set')"><span class="tab-icon">⚙️</span>Списки</div>
+    <div class="tab" onclick="sw('plan')"><span class="tab-icon">📅</span>Планування</div>
+    <div class="tab" onclick="sw('spys')"><span class="tab-icon">✂️</span>Списання</div>
+    <div class="tab" onclick="sw('zvit')"><span class="tab-icon">📄</span>Звіти</div>
+  </div>
+</div>
+
+<div class="page">
+
+<!-- СКЛАД -->
+<div class="section active" id="sec-sklad">
+  <div class="rrow"><span id="lastR">...</span><button class="btn-outline" onclick="loadStock(true)">🔄 Оновити</button></div>
+  <div id="stockContent"><div class="loader"><span class="sp"></span>Завантаження...</div></div>
+</div>
+
+<!-- НАДХОДЖЕННЯ -->
+<div class="section" id="sec-nadx">
+  <div class="card">
+    <div class="card-title">Нове надходження сировини</div>
+
+    <div class="row2">
+      <div class="field"><label>Тип сировини</label><select id="n-tip" onchange="onTipChange()"><option value="">— оберіть —</option></select></div>
+      <div class="field"><label>Щільність <span class="optional">(г/м²)</span></label><select id="n-density"><option value="">— оберіть —</option></select></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Ширина / Розмір</label><select id="n-shyr"><option value="">— оберіть —</option></select></div>
+      <div class="field"><label>Колір / Особливості</label><select id="n-kolir"><option value="">— оберіть —</option></select></div>
+    </div>
+
+    <!-- Гофрокартон (рулони + м2) -->
+    <div class="cond-block" id="cb-gofra">
+      <div class="section-label">Параметри гофрокартону</div>
+      <div class="row3">
+        <div class="field"><label>К-сть рулонів</label><input type="number" id="n-reels" placeholder="0" min="1"></div>
+        <div class="field"><label>М² (загальна)</label><input type="number" id="n-m2" placeholder="0"></div>
+        <div class="field"><label>Вага, кг</label><input type="number" id="n-wgt" placeholder="0"></div>
+      </div>
+    </div>
+
+    <!-- Інший картон в рулонах (кг) -->
+    <div class="cond-block" id="cb-rulon">
+      <div class="section-label">Параметри рулонної сировини</div>
+      <div class="row2">
+        <div class="field"><label>К-сть рулонів</label><input type="number" id="n-reels2" placeholder="0" min="1"></div>
+        <div class="field"><label>Загальна вага, кг</label><input type="number" id="n-wgt2" placeholder="0"></div>
+      </div>
+    </div>
+
+    <!-- Аркуші / палети -->
+    <div class="cond-block" id="cb-arkyshi">
+      <div class="section-label">Параметри аркушів / палет</div>
+      <div class="row2">
+        <div class="field"><label>Розмір аркуша (мм)</label><input type="text" id="n-arksize" placeholder="700×500"></div>
+        <div class="field"><label>К-сть аркушів (загальна)</label><input type="number" id="n-sheets" placeholder="0"></div>
+      </div>
+      <div class="row3">
+        <div class="field"><label>К-сть палет</label><input type="number" id="n-pallets" placeholder="0"></div>
+        <div class="field"><label>Аркушів на палеті</label><input type="number" id="n-shperpal" placeholder="0"></div>
+        <div class="field"><label>Загальна вага, кг</label><input type="number" id="n-wgt3" placeholder="0"></div>
+      </div>
+    </div>
+
+    <div class="field"><label>Примітка <span class="optional">(необов'язково)</span></label>
+      <input type="text" id="n-note" placeholder="Постачальник, партія, накладна..."></div>
+
+    <button class="btn-main" onclick="saveArrival()">✅ Зберегти надходження</button>
+    <p style="text-align:center;font-size:11px;color:var(--sub);margin-top:8px">Якщо позиція вже є — кількість/вага додасться до наявної</p>
+  </div>
+</div>
+
+<!-- В РОБОТУ -->
+<div class="section" id="sec-vr">
+  <div class="card">
+    <div class="card-title">Виробниче завдання</div>
+
+    <div class="field"><label>Що пускаємо в роботу?</label>
+      <div class="toggle-row" id="vr-type-row">
+        <button class="toggle-btn active" data-type="reels" onclick="setVrType('reels',this)">📜 Рулони</button>
+        <button class="toggle-btn" data-type="pallets" onclick="setVrType('pallets',this)">📦 Палети</button>
+        <button class="toggle-btn" data-type="boxes_no_glue" onclick="setVrType('boxes_no_glue',this)">📂 Ящики без клею</button>
+        <button class="toggle-btn" data-type="boxes_glue" onclick="setVrType('boxes_glue',this)">✅ Ящики з клеєм</button>
+      </div>
+    </div>
+
+    <div class="field">
+      <label>Яку сировину зі складу?</label>
+      <select id="vr-mat" onchange="onMat()"><option value="">— оберіть зі складу —</option></select>
+    </div>
+    <div class="zbox" id="vr-zbox">
+      <div class="zbox-num" id="vr-znum">—</div>
+      <div class="zbox-label" id="vr-zlabel">залишок на складі</div>
+    </div>
+
+    <div class="row2">
+      <div class="field"><label>К-сть в роботу</label><input type="number" id="vr-qty" placeholder="0" min="1" oninput="onQty()"></div>
+      <div class="field"><label>Розмір стакана</label>
+        <select id="vr-size" onchange="fillMisFromCatalog()"><option value="">— оберіть —</option>
+          <option>180мл</option><option>250мл</option><option>300мл</option>
+          <option>340мл</option><option>400мл</option><option>500мл</option>
+        </select></div>
+    </div>
+
+    <div class="row2">
+      <div class="field"><label>Заготовок з рулона / аркуша</label><input type="number" id="vr-zpR" placeholder="9100" oninput="calcT()"></div>
+      <div class="field"><label>Всього заготовок</label><input type="number" id="vr-tot" placeholder="авто" class="readonly-field" readonly></div>
+    </div>
+
+    <!-- Місячна потреба в заготовках -->
+    <div class="field">
+      <label>Місячна потреба, заготовок <span class="optional">(оновити при потребі)</span></label>
+      <input type="number" id="vr-mis-zag" placeholder="0">
+    </div>
+
+    <div class="divider"></div>
+    <div class="field"><label>Куди йде результат?</label>
+      <div class="toggle-row">
+        <button class="toggle-btn active" data-dest="sklad" onclick="setDest('sklad',this)">📦 Повернути на склад</button>
+        <button class="toggle-btn" data-dest="vyro" onclick="setDest('vyro',this)">🏭 На виробництво</button>
+      </div>
+    </div>
+
+    <div class="cond-block show" id="cb-sklad-out">
+      <div class="section-label">🟩 Палети (на склад)</div>
+      <div class="row3">
+        <div class="field"><label>Палет</label><input type="number" id="vr-p" placeholder="0" oninput="calcP()"></div>
+        <div class="field"><label>Заг/палеті</label><input type="number" id="vr-zp" placeholder="0" oninput="calcP()"></div>
+        <div class="field"><label>Всього</label><input type="number" id="vr-pt" placeholder="авто" class="readonly-field" readonly></div>
+      </div>
+    </div>
+
+    <div class="cond-block" id="cb-nogl-out">
+      <div class="section-label">🟨 Ящики без клею</div>
+      <div class="row2">
+        <div class="field"><label>Ящиків</label><input type="number" id="vr-yb" placeholder="0"></div>
+        <div class="field"><label>К-сть заготовок</label><input type="number" id="vr-zb" placeholder="0"></div>
+      </div>
+    </div>
+
+    <div class="cond-block" id="cb-gl-out">
+      <div class="section-label">🟦 Ящики з клеєм</div>
+      <div class="row2">
+        <div class="field"><label>Ящиків</label><input type="number" id="vr-yk" placeholder="0"></div>
+        <div class="field"><label>К-сть заготовок</label><input type="number" id="vr-zk" placeholder="0"></div>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="field"><label>Примітка <span class="optional">(необов'язково)</span></label>
+      <input type="text" id="vr-note" placeholder="..."></div>
+    <button class="btn-main" onclick="saveTask()">✅ Зберегти завдання</button>
+  </div>
+  <div class="pos-hdr">Завдання за сьогодні <span class="cnt" id="cnt-t">0</span></div>
+  <div id="tasksList"><div class="empty-state">Завдань ще немає</div></div>
+</div>
+
+<!-- ФОРМУЛИ -->
+<div class="section" id="sec-formula">
+  <div class="card">
+    <div class="card-title">🔢 Формули — Вихід заготовок</div>
+
+    <div class="field"><label>Тип розрахунку</label>
+      <div class="toggle-row">
+        <button class="toggle-btn active" onclick="setFormulaType('gofra',this)">Гофрокартон</button>
+        <button class="toggle-btn" onclick="setFormulaType('rulon',this)">Інший рулон</button>
+      </div>
+    </div>
+
+    <!-- Гофра -->
+    <div id="f-gofra">
+      <div class="formula-box">
+        <div class="formula-title">Гофрокартон: вихід заготовок з рулона</div>
+        <div class="row2">
+          <div class="field"><label>Довжина рулона, м</label><input type="number" id="f-g-len" placeholder="250" oninput="calcGofra()"></div>
+          <div class="field"><label>Довжина висічки, м</label><input type="number" id="f-g-die" placeholder="0.385" step="0.001" oninput="calcGofra()"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Заготовок на аркуші, шт</label><input type="number" id="f-g-persheet" placeholder="14" oninput="calcGofra()"></div>
+          <div class="field"><label>Брак, %</label><input type="number" id="f-g-brak" placeholder="0" step="0.1" oninput="calcGofra()"></div>
+        </div>
+        <div class="formula-result" id="f-g-result">
+          <div class="formula-result-num" id="f-g-num">—</div>
+          <div class="formula-result-label">заготовок з рулона (з урахуванням браку)</div>
+        </div>
+        <div style="font-size:11px;color:var(--sub);margin-top:8px" id="f-g-detail"></div>
+      </div>
+    </div>
+
+    <!-- Інший рулон -->
+    <div id="f-rulon" style="display:none">
+      <div class="formula-box">
+        <div class="formula-title">Рулонний картон: вихід заготовок з тони</div>
+        <div class="row2">
+          <div class="field"><label>Ширина рулона, мм</label><input type="number" id="f-r-width" placeholder="760" oninput="calcRulon()"></div>
+          <div class="field"><label>Довжина висічки, мм</label><input type="number" id="f-r-die" placeholder="385" oninput="calcRulon()"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Щільність, г/м²</label><input type="number" id="f-r-dens" placeholder="350" oninput="calcRulon()"></div>
+          <div class="field"><label>Заготовок на аркуші, шт</label><input type="number" id="f-r-persheet" placeholder="1" oninput="calcRulon()"></div>
+        </div>
+        <div class="row2">
+          <div class="field"><label>Брак, %</label><input type="number" id="f-r-brak" placeholder="0" step="0.1" oninput="calcRulon()"></div>
+          <div class="field"></div>
+        </div>
+        <div class="formula-result" id="f-r-result">
+          <div class="formula-result-num" id="f-r-num">—</div>
+          <div class="formula-result-label">заготовок з тони (з урахуванням браку)</div>
+        </div>
+        <div style="font-size:11px;color:var(--sub);margin-top:8px" id="f-r-detail"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ЗАМОВЛЕННЯ -->
+<div class="section" id="sec-zam">
+  <div class="rrow"><span style="font-size:11px;color:var(--sub)">Що потребує уваги</span>
+    <button class="btn-outline" onclick="loadZam()">🔄 Оновити</button></div>
+  <div id="zamContent"><div class="loader"><span class="sp"></span>Завантаження...</div></div>
+</div>
+
+<!-- СПИСКИ -->
+<div class="section" id="sec-set">
+  <div class="card">
+    <div class="card-title">Управління списками dropdown</div>
+    <div id="setContent"><div class="loader"><span class="sp"></span>Завантаження...</div></div>
+  </div>
+  <div class="card" id="catalog-card">
+    <div class="card-title">📋 Каталог готової продукції</div>
+
+    <!-- Форма додавання -->
+    <div id="catalog-form">
+      <div class="row3">
+        <div class="field"><label>Розмір стакана</label>
+          <select id="cat-rozmir">
+            <option value="">— оберіть —</option>
+            <option>110мл</option><option>175мл</option><option>180мл</option>
+            <option>250мл</option><option>300мл</option><option>340мл</option>
+            <option>400мл</option><option>500мл</option>
+          </select></div>
+        <div class="field"><label>Тип стакана</label>
+          <select id="cat-typ">
+            <option value="">— оберіть —</option>
+            <option>Гофро</option>
+            <option>ДВ глянцевий</option>
+            <option>ДВ крафтовий</option>
+            <option>ДВ брендований</option>
+            <option>Одношаровий</option>
+          </select></div>
+        <div class="field"><label>Колір / Різновид</label>
+          <select id="cat-kolir" onchange="onCatKolir()">
+            <option value="">— оберіть —</option>
+            <option>Білий</option>
+            <option>Крафт</option>
+            <option>Кольоровий</option>
+            <option>Брендований</option>
+            <option>Червоний</option>
+            <option>Чорний</option>
+            <option>Зелений</option>
+            <option>Інший</option>
+          </select></div>
+      </div>
+      <div class="cond-block" id="cb-cat-nazva">
+        <div class="field"><label>Назва малюнку / бренду</label>
+          <input type="text" id="cat-nazva" placeholder="Малюнок А, Назва бренду..."></div>
+      </div>
+      <div class="field"><label>Місячна потреба, заготовок</label>
+        <input type="number" id="cat-mis" placeholder="0" min="0"></div>
+      <div style="display:flex;gap:8px">
+        <button class="btn-main" style="flex:1" onclick="saveCatalogItem()">➕ Додати позицію</button>
+        <button class="btn-outline" onclick="clearCatForm()">✕</button>
+      </div>
+    </div>
+
+    <div style="margin-top:14px" id="catalogList">
+      <div class="loader"><span class="sp"></span>Завантаження...</div>
+    </div>
+  </div>
+
+  <!-- BOM -->
+  <div class="card" id="bom-card">
+    <div class="card-title">📦 Карти виробів (норми пакування)</div>
+    <p style="font-size:11px;color:var(--sub);margin-bottom:12px">Визначає скільки ящиків, рукавів і дна потрібно на партію стаканів. Можна редагувати в будь-який момент.</p>
+
+    <div class="row2">
+      <div class="field"><label>Розмір стакана</label>
+        <select id="bom-rozmir">
+          <option value="">— оберіть —</option>
+          <option>110мл</option><option>175мл</option><option>180мл</option>
+          <option>250мл</option><option>300мл</option><option>340мл</option>
+          <option>400мл</option><option>500мл</option>
+        </select></div>
+      <div class="field"><label>Тип стакана</label>
+        <select id="bom-typ">
+          <option value="">— оберіть —</option>
+          <option>Гофро</option><option>ДВ глянцевий</option>
+          <option>ДВ крафтовий</option><option>Одношаровий</option>
+        </select></div>
+    </div>
+    <div class="row3">
+      <div class="field"><label>Стаканів в ящику</label>
+        <input type="number" id="bom-box" placeholder="3000" min="1" oninput="calcBomRukav()"></div>
+      <div class="field"><label>Стаканів в рукаві</label>
+        <input type="number" id="bom-sleeve" placeholder="50" min="1" oninput="calcBomRukav()"></div>
+      <div class="field"><label>Рукавів в ящику</label>
+        <input type="number" id="bom-rperbox" placeholder="авто" class="readonly-field" readonly></div>
+    </div>
+    <div class="row2">
+      <div class="field"><label>Кг дна на 1 стакан</label>
+        <input type="number" id="bom-dno" placeholder="0.00007" step="0.00001"></div>
+      <div class="field"><label>Стандартний розмір дна</label>
+        <input type="text" id="bom-dno-size" placeholder="60мм, 65мм..."></div>
+    </div>
+    <div class="field"><label>Примітка</label>
+      <input type="text" id="bom-note" placeholder="Особливості пакування..."></div>
+    <div style="display:flex;gap:8px">
+      <button class="btn-main" style="flex:1" onclick="saveBOMItem()">➕ Зберегти карту</button>
+      <button class="btn-outline" onclick="clearBOMForm()">✕</button>
+    </div>
+    <div style="margin-top:14px" id="bomList">
+      <div class="loader"><span class="sp"></span>Завантаження...</div>
+    </div>
+  </div>
+
+  <div class="card" style="border:2px solid var(--red-bg)">
+    <div class="card-title" style="color:var(--red-t)">⚠️ Небезпечна зона</div>
+    <p style="font-size:12px;color:var(--sub);margin-bottom:12px">Очищення видалить ВСІ дані складу і журнал завдань. Використовуйте тільки для видалення тестових даних.</p>
+    <button class="btn-danger" onclick="confirmClear()">🗑️ Очистити всі тестові дані</button>
+  </div>
+</div>
+
+<!-- ПЛАНУВАННЯ -->
+<div class="section" id="sec-plan">
+  <div class="card">
+    <div class="card-title">📅 Формування плану виробництва</div>
+
+    <div class="field"><label>Період</label>
+      <div class="toggle-row">
+        <button class="toggle-btn active" onclick="setPlanPeriod('week',this)">📅 Тиждень</button>
+        <button class="toggle-btn" onclick="setPlanPeriod('month',this)">📆 Місяць</button>
+      </div>
+    </div>
+
+    <div class="row3">
+      <div class="field"><label>Розмір стакана</label>
+        <select id="pl-rozmir">
+          <option value="">— оберіть —</option>
+          <option>110мл</option><option>175мл</option><option>180мл</option>
+          <option>250мл</option><option>300мл</option><option>340мл</option>
+          <option>400мл</option><option>500мл</option>
+        </select></div>
+      <div class="field"><label>Тип стакана</label>
+        <select id="pl-typ">
+          <option value="">— оберіть —</option>
+          <option>Гофро</option><option>ДВ глянцевий</option>
+          <option>ДВ крафтовий</option><option>ДВ брендований</option>
+          <option>Одношаровий</option>
+        </select></div>
+      <div class="field"><label>Колір / Різновид</label>
+        <select id="pl-kolir" onchange="onPlKolir()">
+          <option value="">— оберіть —</option>
+          <option>Білий</option><option>Крафт</option>
+          <option>Кольоровий</option><option>Брендований</option>
+          <option>Червоний</option><option>Чорний</option><option>Зелений</option>
+        </select></div>
+    </div>
+
+    <div class="cond-block" id="cb-pl-nazva">
+      <div class="field"><label>Назва малюнку / бренду</label>
+        <input type="text" id="pl-nazva" placeholder="Малюнок А, Назва бренду..."></div>
+    </div>
+
+    <div class="row2">
+      <div class="field"><label>К-сть заготовок</label>
+        <input type="number" id="pl-kil" placeholder="0" min="0" oninput="autofillFromCatalog()"></div>
+      <div class="field"><label>З каталогу (місячна)</label>
+        <input type="number" id="pl-catalog-mis" placeholder="авто" class="readonly-field" readonly></div>
+    </div>
+
+    <div class="field"><label>Статус</label>
+      <select id="pl-status">
+        <option value="planned">Заплановано</option>
+        <option value="urgent">Позачергово ⚡</option>
+      </select></div>
+
+    <div class="field"><label>Примітка для торгового відділу</label>
+      <input type="text" id="pl-note" placeholder="Коментар, пояснення..."></div>
+
+    <button class="btn-main" onclick="addPlanItem()">➕ Додати до плану</button>
+  </div>
+
+  <!-- Поточний план -->
+  <div id="planList"><div class="empty-state">План порожній. Додайте позиції вище.</div></div>
+
+  <div style="display:flex;gap:8px;margin-top:4px" id="plan-actions" style="display:none">
+    <button class="btn-main" style="flex:1" onclick="savePlan()">💾 Зберегти план</button>
+  </div>
+
+  <button class="btn-main" style="background:var(--dark);margin-top:8px" onclick="exportPlanPDF()">
+    📄 Зберегти PDF для торгового відділу
+  </button>
+</div>
+
+<!-- СПИСАННЯ -->
+<div class="section" id="sec-spys">
+  <div class="card">
+    <div class="card-title">✂️ Списання матеріалів після виробництва</div>
+    <p style="font-size:11px;color:var(--sub);margin-bottom:12px">
+      Вкажіть що виготовили → система розрахує скільки списати з кожної позиції складу
+    </p>
+
+    <div class="row2">
+      <div class="field"><label>Розмір стакана</label>
+        <select id="sp-rozmir" onchange="onSpProduct()">
+          <option value="">— оберіть —</option>
+          <option>110мл</option><option>175мл</option><option>180мл</option>
+          <option>250мл</option><option>300мл</option><option>340мл</option>
+          <option>400мл</option><option>500мл</option>
+        </select></div>
+      <div class="field"><label>Тип стакана</label>
+        <select id="sp-typ" onchange="onSpProduct()">
+          <option value="">— оберіть —</option>
+          <option>Гофро</option><option>ДВ глянцевий</option>
+          <option>ДВ крафтовий</option><option>Одношаровий</option>
+        </select></div>
+    </div>
+
+    <div class="field"><label>Кількість виготовлених стаканів</label>
+      <input type="number" id="sp-qty" placeholder="0" min="1" oninput="calcWriteOff()"></div>
+
+    <!-- Розрахунок -->
+    <div class="cond-block" id="cb-writeoff">
+      <div class="section-label">Буде списано зі складу</div>
+
+      <div style="background:var(--light);border-radius:10px;padding:12px;margin-bottom:12px">
+        <div class="row3" style="margin-bottom:8px">
+          <div style="text-align:center">
+            <div style="font-size:22px;font-weight:800;color:var(--dark)" id="sp-boxes">—</div>
+            <div style="font-size:11px;color:var(--sub)">ящиків</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:22px;font-weight:800;color:var(--dark)" id="sp-sleeves">—</div>
+            <div style="font-size:11px;color:var(--sub)">рукавів</div>
+          </div>
+          <div style="text-align:center">
+            <div style="font-size:22px;font-weight:800;color:var(--dark)" id="sp-dno-kg">—</div>
+            <div style="font-size:11px;color:var(--sub)">кг дна</div>
+          </div>
+        </div>
+        <div style="font-size:11px;color:var(--sub);text-align:center" id="sp-bom-hint"></div>
+      </div>
+
+      <div class="field"><label>Ящики — яку позицію зі складу списати?</label>
+        <select id="sp-box-mat">
+          <option value="">— оберіть зі складу —</option>
+        </select></div>
+      <div style="font-size:11px;color:var(--sub);margin:-8px 0 10px" id="sp-box-stock"></div>
+
+      <div class="field"><label>Рукава — яку позицію зі складу списати?</label>
+        <select id="sp-sleeve-mat">
+          <option value="">— оберіть зі складу —</option>
+        </select></div>
+      <div style="font-size:11px;color:var(--sub);margin:-8px 0 10px" id="sp-sleeve-stock"></div>
+
+      <div class="field"><label>Дно — яку позицію зі складу списати?</label>
+        <select id="sp-dno-mat" onchange="onSpDnoSelect()">
+          <option value="">— оберіть зі складу —</option>
+        </select></div>
+      <div style="font-size:11px;color:var(--sub);margin:-8px 0 4px" id="sp-dno-stock"></div>
+      <div style="font-size:11px;color:var(--amber-t);margin-bottom:10px" id="sp-dno-warn"></div>
+
+      <div class="field"><label>Кг дна (можна скоригувати вручну)</label>
+        <input type="number" id="sp-dno-kg-edit" placeholder="0" step="0.001"></div>
+
+      <div class="field"><label>Примітка до списання</label>
+        <input type="text" id="sp-note" placeholder="Необов'язково"></div>
+
+      <button class="btn-main" onclick="confirmWriteOff()">✂️ Списати з складу</button>
+    </div>
+  </div>
+
+  <div class="pos-hdr">Списання за сьогодні <span class="cnt" id="cnt-sp">0</span></div>
+  <div id="spList"><div class="empty-state">Списань ще немає</div></div>
+</div>
+
+<!-- ЗВІТИ -->
+<div class="section" id="sec-zvit">
+  <div class="card">
+    <div class="card-title">📄 Звіти</div>
+    <div class="field"><label>Дата звіту</label>
+      <input type="date" id="zvit-date"></div>
+    <button class="btn-main" onclick="loadReport()">📊 Сформувати звіт</button>
+  </div>
+  <div id="zvitContent"></div>
+  <div id="printArea" style="display:none"></div>
+</div>
+
+</div><!-- /page -->
+<div class="toast" id="toast"></div>
+
+<script>
+let URL_ = localStorage.getItem('cuplus_url') || '';
+
+// ── CACHE ──────────────────────────────────────────────────────────────────
+const CACHE_TTL = 5 * 60 * 1000; // 5 хвилин
+
+function cacheSet(key, data) {
+  try {
+    localStorage.setItem('cache_' + key, JSON.stringify({ts: Date.now(), data}));
+  } catch(e) {}
+}
+
+function cacheGet(key) {
+  try {
+    const raw = localStorage.getItem('cache_' + key);
+    if (!raw) return null;
+    const obj = JSON.parse(raw);
+    if (Date.now() - obj.ts > CACHE_TTL) return null;
+    return obj.data;
+  } catch(e) { return null; }
+}
+
+function cacheClear() {
+  Object.keys(localStorage)
+    .filter(k => k.startsWith('cache_'))
+    .forEach(k => localStorage.removeItem(k));
+}
+let stock=[], sets={tip:[],shyr:[],kolir:[],density:[]}, tasks=[];
+let vrType='reels', destType='sklad', fType='gofra';
+
+document.getElementById('dateBadge').textContent = new Date().toLocaleDateString('uk-UA');
+document.getElementById('zvit-date').value = new Date().toISOString().split('T')[0];
+
+const params = new URLSearchParams(window.location.search);
+if (!URL_ || params.has('setup')) showSetup();
+else init();
+
+function showSetup(){
+  document.getElementById('setupUrl').value = URL_||'';
+  document.getElementById('overlay').classList.remove('hidden');
+}
+function saveUrl(){
+  const u=document.getElementById('setupUrl').value.trim();
+  if(!u||!u.includes('script.google.com')){alert('Вставте правильний URL (script.google.com)');return;}
+  URL_=u; localStorage.setItem('cuplus_url',u);
+  document.getElementById('overlay').classList.add('hidden');
+  window.history.replaceState({},'',window.location.pathname);
+  toast('✅ URL збережено!',false,true); init();
+}
+async function confirmClear(){
+  if(!confirm('⚠️ Видалити ВСІ дані складу і журнал завдань?\n\nЦю дію не можна скасувати!')) return;
+  try{
+    const r=await api('clearData');
+    if(r.status==='ok'){cacheClear();toast('✅ Дані очищено',false,true);stock=[];tasks=[];renderStock();renderTasks();}
+    else toast('❌ '+r.message,true);
+  }catch(e){toast('❌ Помилка',true);}
+}
+async function init(){await loadSettings();await loadStock();await loadCatalog();await loadBOM();}
+
+function sw(n){
+  const ns=['sklad','nadx','vr','formula','zam','set','plan','spys','zvit'];
+  document.querySelectorAll('.tab').forEach((t,i)=>t.classList.toggle('active',ns[i]===n));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  document.getElementById('sec-'+n).classList.add('active');
+  if(n==='sklad') loadStock();
+  if(n==='zam') loadZam();
+  if(n==='vr') refreshMat();
+  if(n==='set'){renderSet();loadCatalog();loadBOM();}
+  if(n==='plan'){loadCurrentPlan();}
+  if(n==='spys'){loadBOM();fillWriteOffDropdowns();}
+}
+
+async function api(action,data={}){
+  if(!URL_){showSetup();throw new Error('no url');}
+  const r=await fetch(URL_,{method:'POST',body:JSON.stringify({action,...data})});
+  const j=await r.json();
+  if(j.status==='error') throw new Error(j.message);
+  return j;
+}
+
+// SETTINGS
+async function loadSettings(){
+  const cached = cacheGet('settings');
+  if (cached) { sets=cached; fillSels(); refreshSettingsBg(); return; }
+  try{const r=await api('getSettings');if(r.status==='ok'){sets=r.data;cacheSet('settings',sets);fillSels();}}catch(e){}
+}
+async function refreshSettingsBg(){
+  try{const r=await api('getSettings');if(r.status==='ok'){sets=r.data;cacheSet('settings',sets);fillSels();}}catch(e){}
+}
+function fillSels(){
+  setSel('n-tip',sets.tip); setSel('n-shyr',sets.shyr); setSel('n-kolir',sets.kolir);
+  setSel('n-density',sets.density||[]);
+}
+function setSel(id,vals){
+  const s=document.getElementById(id);if(!s)return;
+  const v=s.value;
+  s.innerHTML='<option value="">— оберіть —</option>'+(vals||[]).map(x=>`<option${x===v?' selected':''}>${x}</option>`).join('');
+}
+
+// Показ полів залежно від типу сировини
+function onTipChange(){
+  const tip=document.getElementById('n-tip').value.toLowerCase();
+  const isGofra=tip.includes('гофр');
+  const isArk=tip.includes('арк')||tip.includes('лист')||tip.includes('палет')||tip.includes('глянц');
+  document.getElementById('cb-gofra').classList.toggle('show',isGofra);
+  document.getElementById('cb-rulon').classList.toggle('show',!isGofra&&!isArk&&tip!=='');
+  document.getElementById('cb-arkyshi').classList.toggle('show',isArk);
+}
+
+// STOCK
+async function loadStock(forceRefresh=false){
+  // Показуємо кешовані дані миттєво
+  const cached = cacheGet('stock');
+  if (cached && !forceRefresh) {
+    stock = cached;
+    renderStock();
+    document.getElementById('lastR').textContent='З кешу · ' + new Date().toLocaleTimeString('uk-UA');
+    // Оновлюємо у фоні
+    refreshStockBg();
+    return;
+  }
+  document.getElementById('stockContent').innerHTML='<div class="loader"><span class="sp"></span>Завантаження...</div>';
+  try{
+    const r=await api('getStock');
+    stock=r.data;
+    cacheSet('stock', stock);
+    renderStock();
+  }
+  catch(e){document.getElementById('stockContent').innerHTML=`<div class="empty-state">⚠️ ${e.message}<br><br><button class="btn-outline" onclick="showSetup()">⚙️ Перевірити URL</button></div>`;}
+  document.getElementById('lastR').textContent='Оновлено: '+new Date().toLocaleTimeString('uk-UA');
+}
+
+async function refreshStockBg(){
+  try{
+    const r=await api('getStock');
+    stock=r.data;
+    cacheSet('stock', stock);
+    renderStock();
+    refreshMat();
+    document.getElementById('lastR').textContent='Оновлено: '+new Date().toLocaleTimeString('uk-UA');
+  }catch(e){}
+}
+function renderStock(){
+  if(!stock.length){document.getElementById('stockContent').innerHTML='<div class="empty-state">Склад порожній. Додайте надходження ➕</div>';return;}
+  const rows=stock.map(d=>{
+    const bc=d.status==='OK'?'b-ok':d.status==='Увага'?'b-warn':d.status==='Замовити'?'b-buy':d.status==='Перевищено!'?'b-over':'b-na';
+    const nc=d.zalishok<0?'n-bad':d.zalishok===0?'n-warn':'n-ok';
+    const extra=d.weight?` · ${f(d.weight)}кг`:'';
+    return `<tr><td><div class="mat-name">${d.tip||'—'}</div>
+      <div class="mat-sub">${[d.shyr,d.kolir,d.density?d.density+'г/м²':''].filter(Boolean).join(' · ')}${extra}</div></td>
+      <td style="text-align:right">${f(d.otrymano)}</td>
+      <td style="text-align:right">${f(d.vidano)}</td>
+      <td style="text-align:right"><span class="${nc}">${f(d.zalishok)}</span></td>
+      <td style="text-align:center"><span class="badge ${bc}">${d.status||'—'}</span></td></tr>`;
+  }).join('');
+  document.getElementById('stockContent').innerHTML=`<div style="overflow-x:auto"><table class="stock-table"><thead><tr><th>Матеріал</th><th>Отримано</th><th>Видано</th><th>Залишок</th><th>Статус</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+function f(n){if(n===null||n===undefined||n==='')return '—';return Number(n).toLocaleString('uk-UA');}
+
+// ARRIVAL
+async function saveArrival(){
+  const tip=document.getElementById('n-tip').value;
+  if(!tip){toast('Оберіть тип сировини',true);return;}
+  const tipLow=tip.toLowerCase();
+  const isGofra=tipLow.includes('гофр');
+  const isArk=tipLow.includes('арк')||tipLow.includes('лист')||tipLow.includes('глянц');
+
+  let qty=0, weight=0, m2=0, sheets=0, pallets=0, shperpal=0, arksize='';
+
+  if(isGofra){
+    qty=Number(document.getElementById('n-reels').value)||0;
+    m2=Number(document.getElementById('n-m2').value)||0;
+    weight=Number(document.getElementById('n-wgt').value)||0;
+    if(!qty&&!m2){toast('Вкажіть к-сть рулонів або м²',true);return;}
+  } else if(isArk){
+    sheets=Number(document.getElementById('n-sheets').value)||0;
+    pallets=Number(document.getElementById('n-pallets').value)||0;
+    shperpal=Number(document.getElementById('n-shperpal').value)||0;
+    arksize=document.getElementById('n-arksize').value;
+    weight=Number(document.getElementById('n-wgt3').value)||0;
+    qty=sheets||(pallets*shperpal)||0;
+    if(!qty){toast('Вкажіть к-сть аркушів або палет',true);return;}
+  } else {
+    qty=Number(document.getElementById('n-reels2').value)||0;
+    weight=Number(document.getElementById('n-wgt2').value)||0;
+    if(!qty){toast('Вкажіть к-сть рулонів',true);return;}
+  }
+
+  try{
+    await api('addArrival',{
+      tip, shyr:document.getElementById('n-shyr').value,
+      kolir:document.getElementById('n-kolir').value,
+      density:document.getElementById('n-density').value,
+      qty, weight, m2, sheets, pallets, shperpal, arksize,
+      note:document.getElementById('n-note').value,
+      date:new Date().toLocaleDateString('uk-UA')
+    });
+    toast('✅ Надходження збережено!',false,true);
+    ['n-reels','n-m2','n-wgt','n-reels2','n-wgt2','n-sheets','n-pallets','n-shperpal','n-wgt3','n-arksize','n-note'].forEach(id=>{
+      const e=document.getElementById(id);if(e)e.value='';
+    });
+    await loadStock(); refreshMat();
+  }catch(e){toast('❌ '+e.message,true);}
+}
+
+// IN PRODUCTION
+function setVrType(type,btn){
+  vrType=type;
+  document.querySelectorAll('#vr-type-row .toggle-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+}
+function setDest(dest,btn){
+  destType=dest;
+  document.querySelectorAll('.toggle-row .toggle-btn[data-dest]').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('cb-sklad-out').classList.toggle('show',dest==='sklad');
+  document.getElementById('cb-nogl-out').classList.toggle('show',dest==='sklad');
+  document.getElementById('cb-gl-out').classList.toggle('show',dest==='sklad');
+}
+function refreshMat(){
+  const sel=document.getElementById('vr-mat');
+  const av=stock.filter(d=>Number(d.zalishok)>0);
+  sel.innerHTML='<option value="">— оберіть зі складу —</option>'+
+    av.map(d=>`<option value="${d.tip}|${d.shyr}|${d.kolir}" data-z="${d.zalishok}" data-unit="${d.unit||'шт'}">`+
+      `${d.tip} / ${d.shyr||'—'} / ${d.kolir||'—'} [${f(d.zalishok)} в залишку]</option>`).join('');
+  if(!av.length) sel.innerHTML='<option value="">На складі немає доступної сировини</option>';
+}
+function onMat(){
+  const sel=document.getElementById('vr-mat'),opt=sel.selectedOptions[0],box=document.getElementById('vr-zbox');
+  if(!sel.value){box.classList.remove('show');return;}
+  const z=Number(opt.dataset.z);
+  document.getElementById('vr-znum').textContent=f(z);
+  box.className='zbox show'+(z<=0?' danger':z<=5?' warn':'');
+  onQty();
+  fillMisFromCatalog();
+}
+function onQty(){
+  const sel=document.getElementById('vr-mat'),opt=sel.selectedOptions[0];
+  const z=opt?Number(opt.dataset.z):Infinity,qty=Number(document.getElementById('vr-qty').value);
+  document.getElementById('vr-qty').classList.toggle('over-limit',qty>z&&qty>0); calcT();
+}
+function calcT(){const q=Number(document.getElementById('vr-qty').value)||0,z=Number(document.getElementById('vr-zpR').value)||0;document.getElementById('vr-tot').value=q&&z?q*z:'';}
+function calcP(){const p=Number(document.getElementById('vr-p').value)||0,z=Number(document.getElementById('vr-zp').value)||0;document.getElementById('vr-pt').value=p&&z?p*z:'';}
+
+async function saveTask(){
+  const matSel=document.getElementById('vr-mat');
+  if(!matSel.value){toast('Оберіть сировину',true);return;}
+  const qty=Number(document.getElementById('vr-qty').value);
+  if(!qty){toast('Вкажіть кількість',true);return;}
+  const z=Number(matSel.selectedOptions[0].dataset.z);
+  if(qty>z){toast(`❌ Максимум ${f(z)} — стільки є на складі`,true);return;}
+  const [tip,shyr,kolir]=matSel.value.split('|');
+  const task={tip,shyr,kolir,vrType,destType,
+    size:document.getElementById('vr-size').value,qty,
+    zpR:document.getElementById('vr-zpR').value,
+    tot:document.getElementById('vr-tot').value,
+    misZag:document.getElementById('vr-mis-zag').value,
+    pal:document.getElementById('vr-p').value,
+    zagpal:document.getElementById('vr-zp').value,
+    palTot:document.getElementById('vr-pt').value,
+    yb:document.getElementById('vr-yb').value,zb:document.getElementById('vr-zb').value,
+    yk:document.getElementById('vr-yk').value,zk:document.getElementById('vr-zk').value,
+    note:document.getElementById('vr-note').value,
+    date:new Date().toLocaleDateString('uk-UA'),
+  };
+  try{
+    await api('addTask',task);
+    toast('✅ Завдання збережено!',false,true);
+    tasks.unshift(task); renderTasks();
+    ['vr-qty','vr-size','vr-zpR','vr-tot','vr-mis-zag','vr-p','vr-zp','vr-pt','vr-yb','vr-zb','vr-yk','vr-zk','vr-note'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+    document.getElementById('vr-mat').value='';
+    document.getElementById('vr-zbox').classList.remove('show');
+    await loadStock(); refreshMat();
+  }catch(e){toast('❌ '+e.message,true);}
+}
+function renderTasks(){
+  document.getElementById('cnt-t').textContent=tasks.length;
+  if(!tasks.length){document.getElementById('tasksList').innerHTML='<div class="empty-state">Завдань ще немає</div>';return;}
+  const typeLabel={reels:'Рулони',pallets:'Палети',boxes_no_glue:'Ящики без клею',boxes_glue:'Ящики з клеєм'};
+  const destLabel={sklad:'→ Склад',vyro:'→ Виробництво'};
+  document.getElementById('tasksList').innerHTML=tasks.map(t=>`
+    <div class="pos-card">
+      <div class="pos-title">${t.tip} / ${t.shyr||'—'} / ${t.kolir||'—'}</div>
+      <div class="pos-tags">
+        <span class="tag hl">${typeLabel[t.vrType]||''}: ${t.qty}</span>
+        ${t.destType?`<span class="tag">${destLabel[t.destType]||''}</span>`:''}
+        ${t.size?`<span class="tag">${t.size}</span>`:''}
+        ${t.tot?`<span class="tag">Заг: ${Number(t.tot).toLocaleString('uk-UA')}</span>`:''}
+        ${t.misZag?`<span class="tag">Міс.потреба: ${Number(t.misZag).toLocaleString('uk-UA')} заг</span>`:''}
+        ${t.note?`<span class="tag">${t.note}</span>`:''}
+      </div>
+    </div>`).join('');
+}
+
+// ZAMOVLENNIA
+async function loadZam(){
+  document.getElementById('zamContent').innerHTML='<div class="loader"><span class="sp"></span>Завантаження...</div>';
+  try{const r=await api('getStock');renderZam(r.data);}
+  catch(e){document.getElementById('zamContent').innerHTML='<div class="empty-state">⚠️ Помилка</div>';}
+}
+function renderZam(data){
+  const order=['Перевищено!','Замовити','Увага'];
+  const urgent=data.filter(d=>order.includes(d.status)).sort((a,b)=>order.indexOf(a.status)-order.indexOf(b.status));
+  if(!urgent.length){document.getElementById('zamContent').innerHTML='<div class="card"><div class="empty-state">🎉 Все ОК — нічого замовляти!</div></div>';return;}
+  document.getElementById('zamContent').innerHTML=urgent.map(d=>{
+    const bc=d.status==='Замовити'?'b-buy':d.status==='Перевищено!'?'b-over':'b-warn';
+    const nc=d.zalishok<0?'n-bad':d.zalishok===0?'n-warn':'';
+    return `<div class="zc"><div class="zm"><div><div class="zn">${d.tip||'—'}</div>
+      <div class="zs">${[d.shyr,d.kolir,d.density?d.density+'г/м²':''].filter(Boolean).join(' · ')}</div></div>
+      <span class="badge ${bc}">${d.status}</span></div>
+      <div class="zst">
+        <div class="zsl"><div class="zsl-l">Залишок</div><div class="zsl-v ${nc}">${f(d.zalishok)}</div></div>
+        <div class="zsl"><div class="zsl-l">Видано</div><div class="zsl-v">${f(d.vidano)}</div></div>
+        <div class="zsl"><div class="zsl-l">Отримано</div><div class="zsl-v">${f(d.otrymano)}</div></div>
+      </div></div>`;
+  }).join('');
+}
+
+// SETTINGS
+function renderSet(){
+  const cats=[
+    {key:'tip',label:'Тип сировини'},
+    {key:'shyr',label:'Ширина / Розмір'},
+    {key:'kolir',label:'Колір / Особливості'},
+    {key:'density',label:'Щільність (г/м²)'},
+  ];
+  document.getElementById('setContent').innerHTML=cats.map(c=>`
+    <div class="sg"><div class="sg-title">${c.label}</div>
+    ${(sets[c.key]||[]).map((v,i)=>`<div class="si"><span>${v}</span><button class="btn-del" onclick="delSet('${c.key}',${i})">✕</button></div>`).join('')}
+    <div class="add-row"><input type="text" id="add-${c.key}" placeholder="Нове значення..."><button class="btn-add-s" onclick="addSet('${c.key}')">+</button></div>
+    </div>`).join('');
+}
+async function addSet(key){const inp=document.getElementById('add-'+key),v=inp.value.trim();if(!v)return;if(!sets[key])sets[key]=[];sets[key].push(v);inp.value='';await saveSet();renderSet();fillSels();toast('Додано',false,true);}
+async function delSet(key,i){sets[key].splice(i,1);await saveSet();renderSet();fillSels();}
+async function saveSet(){try{await api('saveSettings',{settings:sets});cacheSet('settings',sets);}catch(e){toast('Помилка',true);}}
+
+// ФОРМУЛИ
+function setFormulaType(type,btn){
+  fType=type;
+  document.querySelectorAll('#sec-formula .toggle-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('f-gofra').style.display=type==='gofra'?'':'none';
+  document.getElementById('f-rulon').style.display=type==='rulon'?'':'none';
+}
+function calcGofra(){
+  const len=Number(document.getElementById('f-g-len').value)||0;
+  const die=Number(document.getElementById('f-g-die').value)||0;
+  const per=Number(document.getElementById('f-g-persheet').value)||0;
+  const brak=Number(document.getElementById('f-g-brak').value)||0;
+  if(!len||!die||!per){document.getElementById('f-g-num').textContent='—';document.getElementById('f-g-detail').textContent='';return;}
+  const sheets=Math.floor(len/die);
+  const total=Math.floor(sheets*per*(1-brak/100));
+  document.getElementById('f-g-num').textContent=total.toLocaleString('uk-UA');
+  document.getElementById('f-g-detail').textContent=`${len}м ÷ ${die}м = ${sheets.toLocaleString('uk-UA')} аркушів × ${per} заг/арк${brak?` − ${brak}% браку`:''}`;
+}
+function calcRulon(){
+  const w=Number(document.getElementById('f-r-width').value)||0;
+  const die=Number(document.getElementById('f-r-die').value)||0;
+  const dens=Number(document.getElementById('f-r-dens').value)||0;
+  const per=Number(document.getElementById('f-r-persheet').value)||1;
+  const brak=Number(document.getElementById('f-r-brak').value)||0;
+  if(!w||!die||!dens){document.getElementById('f-r-num').textContent='—';document.getElementById('f-r-detail').textContent='';return;}
+  const arkWeightG=(w/1000)*(die/1000)*dens;
+  const sheetsPerTon=Math.floor(1000000/arkWeightG);
+  const total=Math.floor(sheetsPerTon*per*(1-brak/100));
+  document.getElementById('f-r-num').textContent=total.toLocaleString('uk-UA');
+  document.getElementById('f-r-detail').textContent=`1 аркуш = ${arkWeightG.toFixed(2)}г → ${sheetsPerTon.toLocaleString('uk-UA')} арк/т × ${per} заг/арк${brak?` − ${brak}% браку`:''}`;
+}
+
+// ЗВІТИ
+async function loadReport(){
+  const date=document.getElementById('zvit-date').value;
+  const d=new Date(date).toLocaleDateString('uk-UA');
+  document.getElementById('zvitContent').innerHTML='<div class="loader"><span class="sp"></span>Формування...</div>';
+  try{
+    const [rStock,rTasks]=await Promise.all([api('getStock'),api('getTasks',{date:d})]);
+    renderReport(d,rStock.data||[],rTasks.data||[]);
+  }catch(e){document.getElementById('zvitContent').innerHTML='<div class="empty-state">⚠️ '+e.message+'</div>';}
+}
+function renderReport(date,stockData,tasksData){
+  const arrivals=tasksData.filter(t=>t.type==='arrival');
+  const tasks=tasksData.filter(t=>t.type==='task');
+  const html=`
+    <div class="card" id="reportCard">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+        <div><div style="font-size:16px;font-weight:800;color:var(--dark)">CUPLUS — Щоденний звіт</div>
+          <div style="font-size:12px;color:var(--sub)">${date}</div></div>
+        <button class="btn-outline" onclick="printReport()">🖨️ Друк / PDF</button>
+      </div>
+      <div class="section-label">📦 Поточний склад</div>
+      <table class="stock-table" style="margin-bottom:14px">
+        <thead><tr><th>Матеріал</th><th>Отримано</th><th>Видано</th><th>Залишок</th><th>Статус</th></tr></thead>
+        <tbody>${stockData.map(d=>{
+          const bc=d.status==='OK'?'b-ok':d.status==='Увага'?'b-warn':d.status==='Замовити'?'b-buy':'b-na';
+          return `<tr><td><b>${d.tip}</b><br><small>${[d.shyr,d.kolir].filter(Boolean).join(' · ')}</small></td>
+            <td>${f(d.otrymano)}</td><td>${f(d.vidano)}</td><td>${f(d.zalishok)}</td>
+            <td><span class="badge ${bc}">${d.status}</span></td></tr>`;
+        }).join('')||'<tr><td colspan="5" style="text-align:center;color:var(--sub)">Немає даних</td></tr>'}</tbody>
+      </table>
+      ${arrivals.length?`<div class="section-label">➕ Надходження за ${date}</div>
+        ${arrivals.map(a=>`<div class="pos-card"><div class="pos-title">${a.tip} / ${a.shyr||'—'} / ${a.kolir||'—'}</div>
+          <div class="pos-tags"><span class="tag hl">+${f(a.qty)}</span>${a.weight?`<span class="tag">${f(a.weight)} кг</span>`:''}</div></div>`).join('')}`:''}
+      ${tasks.length?`<div class="section-label">🏭 Завдання за ${date}</div>
+        ${tasks.map(t=>{const tl={reels:'Рулони',pallets:'Палети',boxes_no_glue:'Ящики без клею',boxes_glue:'Ящики з клеєм'};
+          return `<div class="pos-card"><div class="pos-title">${t.tip} / ${t.shyr||'—'} / ${t.kolir||'—'}</div>
+            <div class="pos-tags"><span class="tag hl">${tl[t.vrType]||''}: ${t.qty}</span>
+            ${t.size?`<span class="tag">${t.size}</span>`:''}
+            ${t.tot?`<span class="tag">Заготовок: ${f(t.tot)}</span>`:''}
+            ${t.destType==='vyro'?'<span class="tag" style="background:#1A3C34;color:white">→ Виробництво</span>':'<span class="tag">→ Склад</span>'}</div></div>`;
+        }).join('')}`:''}
+    </div>`;
+  document.getElementById('zvitContent').innerHTML=html;
+}
+function printReport(){
+  window.print();
+}
+
+// ── CATALOG ────────────────────────────────────────────────────────────────
+let catalog = [];
+
+async function loadCatalog(forceRefresh=false){
+  const cached = cacheGet('catalog');
+  if (cached && !forceRefresh) { catalog=cached; renderCatalog(); refreshCatalogBg(); return; }
+  try{
+    const r=await api('getCatalog');
+    if(r.status==='ok'){catalog=r.data;cacheSet('catalog',catalog);renderCatalog();}
+  }catch(e){console.log('catalog err',e);}
+}
+async function refreshCatalogBg(){
+  try{const r=await api('getCatalog');if(r.status==='ok'){catalog=r.data;cacheSet('catalog',catalog);renderCatalog();}}catch(e){}
+}
+
+function renderCatalog(){
+  const el=document.getElementById('catalogList');
+  if(!catalog.length){el.innerHTML='<div class="empty-state">Позицій ще немає. Додайте вище.</div>';return;}
+  
+  // Group by розмір
+  const byRozmir={};
+  catalog.forEach(c=>{
+    if(!byRozmir[c.rozmir]) byRozmir[c.rozmir]=[];
+    byRozmir[c.rozmir].push(c);
+  });
+
+  el.innerHTML=Object.keys(byRozmir).sort().map(roz=>`
+    <div style="margin-bottom:12px">
+      <div style="font-size:12px;font-weight:700;color:var(--dark);margin-bottom:6px;padding:4px 8px;background:var(--light);border-radius:6px">${roz}</div>
+      ${byRozmir[roz].map(c=>`
+        <div class="si" style="padding:8px 4px">
+          <div>
+            <div style="font-size:13px;font-weight:600">${c.typ} · ${c.kolir}${c.nazva?' «'+c.nazva+'»':''}</div>
+            <div style="font-size:11px;color:var(--sub)">Місячна потреба: <b>${Number(c.misyachna).toLocaleString('uk-UA')} заг</b></div>
+          </div>
+          <div style="display:flex;gap:6px">
+            <button class="btn-outline" style="font-size:11px;padding:4px 8px" onclick="editCatalog(${c.id})">✏️</button>
+            <button class="btn-del" onclick="deleteCatalog(${c.id})">✕</button>
+          </div>
+        </div>`).join('')}
+    </div>`).join('');
+}
+
+function onCatKolir(){
+  const v=document.getElementById('cat-kolir').value;
+  const show=v==='Кольоровий'||v==='Брендований'||v==='Інший';
+  document.getElementById('cb-cat-nazva').classList.toggle('show',show);
+}
+
+function clearCatForm(){
+  ['cat-rozmir','cat-typ','cat-kolir','cat-nazva','cat-mis'].forEach(id=>{
+    const e=document.getElementById(id);if(e)e.value='';
+  });
+  document.getElementById('cb-cat-nazva').classList.remove('show');
+  document.getElementById('cat-mis').dataset.editId='';
+}
+
+async function saveCatalogItem(){
+  const rozmir=document.getElementById('cat-rozmir').value;
+  const typ=document.getElementById('cat-typ').value;
+  const kolir=document.getElementById('cat-kolir').value;
+  const nazva=document.getElementById('cat-nazva').value;
+  const mis=Number(document.getElementById('cat-mis').value)||0;
+  if(!rozmir||!typ||!kolir){toast('Заповніть розмір, тип і колір',true);return;}
+  if(!mis){toast('Вкажіть місячну потребу',true);return;}
+  const editId=document.getElementById('cat-mis').dataset.editId;
+  try{
+    const action=editId?'updateCatalogItem':'addCatalogItem';
+    await api(action,{id:editId,rozmir,typ,kolir,nazva,misyachna:mis});
+    toast('✅ Збережено',false,true);
+    clearCatForm();
+    cacheSet('catalog', null); // інвалідуємо кеш
+    await loadCatalog(true);
+    // Оновлюємо dropdown місячної потреби у В роботу
+    fillMisFromCatalog();
+  }catch(e){toast('❌ '+e.message,true);}
+}
+
+function editCatalog(id){
+  const c=catalog.find(x=>x.id===id);if(!c)return;
+  document.getElementById('cat-rozmir').value=c.rozmir;
+  document.getElementById('cat-typ').value=c.typ;
+  document.getElementById('cat-kolir').value=c.kolir;
+  document.getElementById('cat-nazva').value=c.nazva||'';
+  document.getElementById('cat-mis').value=c.misyachna;
+  document.getElementById('cat-mis').dataset.editId=id;
+  onCatKolir();
+  document.getElementById('catalog-card').scrollIntoView({behavior:'smooth'});
+}
+
+async function deleteCatalog(id){
+  if(!confirm('Видалити цю позицію?'))return;
+  try{
+    await api('deleteCatalogItem',{id});
+    await loadCatalog(); fillMisFromCatalog();
+    toast('Видалено',false,true);
+  }catch(e){toast('❌ '+e.message,true);}
+}
+
+// Автопідтягування місячної потреби у В роботу
+function fillMisFromCatalog(){
+  const size=document.getElementById('vr-size').value;
+  const matSel=document.getElementById('vr-mat');
+  const opt=matSel.selectedOptions[0];
+  if(!size||!opt||!opt.value)return;
+  
+  // Визначаємо тип стакана за типом сировини
+  const matTip=(opt.value.split('|')[0]||'').toLowerCase();
+  let stakTyp='';
+  if(matTip.includes('гофр'))         stakTyp='Гофро';
+  else if(matTip.includes('глянц'))   stakTyp='ДВ глянцевий';
+  else if(matTip.includes('ламін'))   stakTyp='ДВ глянцевий';
+  else if(matTip.includes('без лам')) stakTyp='ДВ крафтовий';
+  else if(matTip.includes('одношар')) stakTyp='Одношаровий';
+
+  const matKolir=(opt.value.split('|')[2]||'');
+
+  // Шукаємо в каталозі
+  const found=catalog.find(c=>
+    c.rozmir===size &&
+    (stakTyp===''||c.typ===stakTyp) &&
+    (matKolir===''||c.kolir===matKolir||c.kolir==='Білий')
+  );
+  if(found){
+    const el=document.getElementById('vr-mis-zag');
+    if(el&&!el.value) el.value=found.misyachna;
+  }
+}
+
+// ── END CATALOG ─────────────────────────────────────────────────────────────
+
+// ── BOM (Карти виробів) ──────────────────────────────────────────────────
+let bom = [];
+let spWriteOffs = [];
+
+function calcBomRukav(){
+  const box=Number(document.getElementById('bom-box').value)||0;
+  const slv=Number(document.getElementById('bom-sleeve').value)||0;
+  document.getElementById('bom-rperbox').value = (box&&slv) ? Math.floor(box/slv) : '';
+}
+
+async function loadBOM(forceRefresh=false){
+  const cached=cacheGet('bom');
+  if(cached&&!forceRefresh){bom=cached;renderBOM();return;}
+  try{
+    const r=await api('getBOM');
+    if(r.status==='ok'){bom=r.data;cacheSet('bom',bom);renderBOM();}
+  }catch(e){}
+}
+
+function renderBOM(){
+  const el=document.getElementById('bomList');
+  if(!bom.length){el.innerHTML='<div class="empty-state">Карток ще немає. Додайте вище.</div>';return;}
+  el.innerHTML=bom.map(b=>`
+    <div class="si">
+      <div>
+        <div style="font-size:13px;font-weight:700">${b.rozmir} ${b.typ}</div>
+        <div style="font-size:11px;color:var(--sub)">${Number(b.box_qty).toLocaleString('uk-UA')} шт/ящ · ${Number(b.sleeve_qty).toLocaleString('uk-UA')} шт/рук · ${b.dno_kg_per} кг дна/шт${b.dno_size?' · дно '+b.dno_size:''}</div>
+      </div>
+      <div style="display:flex;gap:4px">
+        <button class="btn-outline" style="font-size:11px;padding:4px 8px" onclick="editBOM(${b.id})">✏️</button>
+        <button class="btn-del" onclick="deleteBOM(${b.id})">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function clearBOMForm(){
+  ['bom-rozmir','bom-typ','bom-box','bom-sleeve','bom-rperbox','bom-dno','bom-dno-size','bom-note'].forEach(id=>{
+    const e=document.getElementById(id);if(e)e.value='';
+  });
+  document.getElementById('bom-box').dataset.editId='';
+}
+
+async function saveBOMItem(){
+  const rozmir=document.getElementById('bom-rozmir').value;
+  const typ=document.getElementById('bom-typ').value;
+  const box=Number(document.getElementById('bom-box').value)||0;
+  const slv=Number(document.getElementById('bom-sleeve').value)||0;
+  const dno=document.getElementById('bom-dno').value;
+  if(!rozmir||!typ){toast('Оберіть розмір і тип',true);return;}
+  if(!box||!slv){toast('Вкажіть к-сть в ящику і рукаві',true);return;}
+  const editId=document.getElementById('bom-box').dataset.editId||'';
+  try{
+    await api(editId?'updateBOM':'addBOM',{
+      id:editId, rozmir, typ,
+      box_qty:box, sleeve_qty:slv,
+      rperbox:Math.floor(box/slv),
+      dno_kg_per:dno||0,
+      dno_size:document.getElementById('bom-dno-size').value,
+      note:document.getElementById('bom-note').value,
+    });
+    toast('✅ Карту збережено',false,true);
+    clearBOMForm();
+    cacheSet('bom',null);
+    await loadBOM(true);
+  }catch(e){toast('❌ '+e.message,true);}
+}
+
+function editBOM(id){
+  const b=bom.find(x=>x.id===id);if(!b)return;
+  document.getElementById('bom-rozmir').value=b.rozmir;
+  document.getElementById('bom-typ').value=b.typ;
+  document.getElementById('bom-box').value=b.box_qty;
+  document.getElementById('bom-sleeve').value=b.sleeve_qty;
+  document.getElementById('bom-rperbox').value=b.rperbox||'';
+  document.getElementById('bom-dno').value=b.dno_kg_per||'';
+  document.getElementById('bom-dno-size').value=b.dno_size||'';
+  document.getElementById('bom-note').value=b.note||'';
+  document.getElementById('bom-box').dataset.editId=id;
+  document.getElementById('bom-card').scrollIntoView({behavior:'smooth'});
+}
+
+async function deleteBOM(id){
+  if(!confirm('Видалити карту виробу?'))return;
+  try{await api('deleteBOM',{id});cacheSet('bom',null);await loadBOM(true);toast('Видалено',false,true);}
+  catch(e){toast('❌ '+e.message,true);}
+}
+
+// ── WRITE-OFF (Списання) ──────────────────────────────────────────────────
+function fillWriteOffDropdowns(){
+  // Ящики — шукаємо на складі позиції типу ящик/гофро ящик
+  const boxes=stock.filter(d=>{
+    const t=(d.tip||'').toLowerCase();
+    return t.includes('ящик')||t.includes('гофро ящ')||t.includes('коробк');
+  });
+  const sleeves=stock.filter(d=>{
+    const t=(d.tip||'').toLowerCase();
+    return t.includes('рукав')||t.includes('поліетил')||t.includes('пакет');
+  });
+  const dnos=stock.filter(d=>{
+    const t=(d.tip||'').toLowerCase();
+    return t.includes('дно');
+  });
+
+  const toOpt=arr=>'<option value="">— оберіть —</option>'+
+    arr.map(d=>`<option value="${d.tip}|${d.shyr}|${d.kolir}" data-z="${d.zalishok}">${d.tip} / ${d.shyr||'—'} / ${d.kolir||'—'} [${f(d.zalishok)} в залишку]</option>`).join('');
+
+  document.getElementById('sp-box-mat').innerHTML=toOpt(boxes.length?boxes:stock);
+  document.getElementById('sp-sleeve-mat').innerHTML=toOpt(sleeves.length?sleeves:stock);
+  document.getElementById('sp-dno-mat').innerHTML=toOpt(dnos.length?dnos:stock);
+}
+
+function onSpProduct(){
+  const rozmir=document.getElementById('sp-rozmir').value;
+  const typ=document.getElementById('sp-typ').value;
+  if(rozmir&&typ) calcWriteOff();
+}
+
+function calcWriteOff(){
+  const rozmir=document.getElementById('sp-rozmir').value;
+  const typ=document.getElementById('sp-typ').value;
+  const qty=Number(document.getElementById('sp-qty').value)||0;
+  const cb=document.getElementById('cb-writeoff');
+
+  if(!rozmir||!typ||!qty){cb.classList.remove('show');return;}
+
+  const bomItem=bom.find(b=>b.rozmir===rozmir&&b.typ===typ);
+  if(!bomItem){
+    cb.classList.remove('show');
+    toast('Карту виробу не знайдено. Додайте в Списки → Карти виробів',true);
+    return;
+  }
+
+  const boxes=Math.ceil(qty/Number(bomItem.box_qty));
+  const sleeves=Math.ceil(qty/Number(bomItem.sleeve_qty));
+  const dnoKg=(qty*Number(bomItem.dno_kg_per)).toFixed(4);
+
+  document.getElementById('sp-boxes').textContent=boxes.toLocaleString('uk-UA');
+  document.getElementById('sp-sleeves').textContent=sleeves.toLocaleString('uk-UA');
+  document.getElementById('sp-dno-kg').textContent=dnoKg+' кг';
+  document.getElementById('sp-dno-kg-edit').value=dnoKg;
+  document.getElementById('sp-bom-hint').textContent=
+    `По нормі: ${Number(bomItem.box_qty).toLocaleString('uk-UA')} шт/ящ · ${Number(bomItem.sleeve_qty).toLocaleString('uk-UA')} шт/рук · ${bomItem.dno_kg_per} кг/шт${bomItem.dno_size?' · стандартне дно: '+bomItem.dno_size:''}`;
+
+  cb.classList.add('show');
+  fillWriteOffDropdowns();
+}
+
+function onSpDnoSelect(){
+  const sel=document.getElementById('sp-dno-mat');
+  const opt=sel.selectedOptions[0];
+  const warn=document.getElementById('sp-dno-warn');
+  if(!opt||!opt.value){warn.textContent='';return;}
+
+  // Перевіряємо чи розмір дна відповідає карті
+  const rozmir=document.getElementById('sp-rozmir').value;
+  const typ=document.getElementById('sp-typ').value;
+  const bomItem=bom.find(b=>b.rozmir===rozmir&&b.typ===typ);
+  const selectedShyr=opt.value.split('|')[1]||'';
+
+  if(bomItem&&bomItem.dno_size&&selectedShyr&&!selectedShyr.includes(bomItem.dno_size)){
+    warn.textContent=`⚠️ Увага: стандартне дно для ${rozmir} — ${bomItem.dno_size}, обрано ${selectedShyr}`;
+  } else {
+    warn.textContent='';
+  }
+  const z=Number(opt.dataset.z);
+  document.getElementById('sp-dno-stock').textContent=`Залишок: ${f(z)} кг`;
+}
+
+async function confirmWriteOff(){
+  const rozmir=document.getElementById('sp-rozmir').value;
+  const typ=document.getElementById('sp-typ').value;
+  const qty=Number(document.getElementById('sp-qty').value)||0;
+  if(!rozmir||!typ||!qty){toast('Заповніть всі поля',true);return;}
+
+  const items=[];
+  const boxMat=document.getElementById('sp-box-mat').value;
+  const slvMat=document.getElementById('sp-sleeve-mat').value;
+  const dnoMat=document.getElementById('sp-dno-mat').value;
+  const dnoKg=Number(document.getElementById('sp-dno-kg-edit').value)||0;
+
+  const bomItem=bom.find(b=>b.rozmir===rozmir&&b.typ===typ);
+  if(!bomItem){toast('Карту виробу не знайдено',true);return;}
+
+  const boxes=Math.ceil(qty/Number(bomItem.box_qty));
+  const sleeves=Math.ceil(qty/Number(bomItem.sleeve_qty));
+
+  if(boxMat) items.push({key:boxMat, qty:boxes, unit:'шт'});
+  if(slvMat) items.push({key:slvMat, qty:sleeves, unit:'шт'});
+  if(dnoMat&&dnoKg) items.push({key:dnoMat, qty:dnoKg, unit:'кг'});
+
+  if(!items.length){toast('Оберіть хоча б одну позицію для списання',true);return;}
+
+  const conf='Списати:\n'+items.map(i=>i.key.split('|')[0]+': '+i.qty+' '+i.unit).join('\n')+'\n\nПідтвердити?';
+  if(!confirm(conf))return;
+
+  try{
+    await api('writeOff',{
+      rozmir, typ, qty_cups:qty,
+      items, note:document.getElementById('sp-note').value,
+      date:new Date().toLocaleDateString('uk-UA')
+    });
+    toast('✅ Списано з складу!',false,true);
+    spWriteOffs.unshift({rozmir,typ,qty,boxes,sleeves,dnoKg,date:new Date().toLocaleDateString('uk-UA')});
+    renderWriteOffs();
+    // Скидаємо форму
+    ['sp-rozmir','sp-typ','sp-qty','sp-note'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('cb-writeoff').classList.remove('show');
+    // Оновлюємо склад
+    cacheSet('stock',null);
+    await loadStock(true);
+    fillWriteOffDropdowns();
+  }catch(e){toast('❌ '+e.message,true);}
+}
+
+function renderWriteOffs(){
+  document.getElementById('cnt-sp').textContent=spWriteOffs.length;
+  if(!spWriteOffs.length){document.getElementById('spList').innerHTML='<div class="empty-state">Списань ще немає</div>';return;}
+  document.getElementById('spList').innerHTML=spWriteOffs.map(s=>`
+    <div class="pos-card">
+      <div class="pos-title">${s.rozmir} ${s.typ} — ${Number(s.qty).toLocaleString('uk-UA')} шт</div>
+      <div class="pos-tags">
+        <span class="tag hl">Ящики: ${s.boxes}</span>
+        <span class="tag">Рукава: ${s.sleeves}</span>
+        ${s.dnoKg?`<span class="tag">Дно: ${s.dnoKg} кг</span>`:''}
+        <span class="tag">${s.date}</span>
+      </div>
+    </div>`).join('');
+}
+
+// ── END BOM + WRITEOFF ─────────────────────────────────────────────────────
+
+// ── PLANNING ─────────────────────────────────────────────────────────────
+let planItems = [];
+let planPeriod = 'week';
+
+function setPlanPeriod(p, btn){
+  planPeriod=p;
+  document.querySelectorAll('#sec-plan .toggle-btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  loadCurrentPlan();
+}
+
+function onPlKolir(){
+  const v=document.getElementById('pl-kolir').value;
+  document.getElementById('cb-pl-nazva').classList.toggle('show',v==='Кольоровий'||v==='Брендований');
+}
+
+function autofillFromCatalog(){
+  const rozmir=document.getElementById('pl-rozmir').value;
+  const typ=document.getElementById('pl-typ').value;
+  const kolir=document.getElementById('pl-kolir').value;
+  const found=catalog.find(c=>c.rozmir===rozmir&&c.typ===typ&&c.kolir===kolir);
+  if(found) document.getElementById('pl-catalog-mis').value=Number(found.misyachna).toLocaleString('uk-UA');
+  else document.getElementById('pl-catalog-mis').value='';
+}
+
+function addPlanItem(){
+  const rozmir=document.getElementById('pl-rozmir').value;
+  const typ=document.getElementById('pl-typ').value;
+  const kolir=document.getElementById('pl-kolir').value;
+  const kil=Number(document.getElementById('pl-kil').value);
+  if(!rozmir||!typ||!kolir){toast('Заповніть розмір, тип і колір',true);return;}
+  if(!kil){toast('Вкажіть кількість заготовок',true);return;}
+  const item={
+    id: Date.now(),
+    rozmir, typ, kolir,
+    nazva: document.getElementById('pl-nazva').value,
+    kil,
+    status: document.getElementById('pl-status').value,
+    prod_note: document.getElementById('pl-note').value,
+    trade_comment: '',
+  };
+  planItems.push(item);
+  renderPlanList();
+  // Clear form
+  ['pl-rozmir','pl-typ','pl-kolir','pl-nazva','pl-kil','pl-note'].forEach(id=>{
+    const e=document.getElementById(id);if(e)e.value='';
+  });
+  document.getElementById('pl-catalog-mis').value='';
+  document.getElementById('cb-pl-nazva').classList.remove('show');
+}
+
+function renderPlanList(){
+  const el=document.getElementById('planList');
+  const actEl=document.getElementById('plan-actions');
+  if(!planItems.length){
+    el.innerHTML='<div class="empty-state">План порожній. Додайте позиції вище.</div>';
+    if(actEl) actEl.style.display='none';
+    return;
+  }
+  if(actEl) actEl.style.display='flex';
+  const statusLabel={planned:'Заплановано',inprogress:'В роботі',done:'Виконано',urgent:'Позачергово ⚡'};
+  el.innerHTML='<div class="card"><div class="card-title">Поточний план</div>'+
+    planItems.map((item,i)=>`
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border)">
+      <div>
+        <div style="font-size:13px;font-weight:700">${item.rozmir} ${item.typ} · ${item.kolir}${item.nazva?' «'+item.nazva+'»':''}</div>
+        <div style="font-size:11px;color:var(--sub)">${Number(item.kil).toLocaleString('uk-UA')} заготовок · ${statusLabel[item.status]||''}</div>
+        ${item.prod_note?`<div style="font-size:11px;color:var(--sub);margin-top:2px">📝 ${item.prod_note}</div>`:''}
+      </div>
+      <div style="display:flex;gap:4px">
+        <select style="font-size:11px;padding:3px;border:1px solid var(--border);border-radius:6px" onchange="changePlanStatus(${i},this.value)">
+          <option value="planned" ${item.status==='planned'?'selected':''}>Заплановано</option>
+          <option value="inprogress" ${item.status==='inprogress'?'selected':''}>В роботі</option>
+          <option value="done" ${item.status==='done'?'selected':''}>Виконано</option>
+          <option value="urgent" ${item.status==='urgent'?'selected':''}>Позачергово</option>
+        </select>
+        <button class="btn-del" onclick="removePlanItem(${i})">✕</button>
+      </div>
+    </div>`).join('')+
+    '</div>';
+}
+
+function changePlanStatus(idx, status){
+  planItems[idx].status=status;
+}
+
+function removePlanItem(idx){
+  planItems.splice(idx,1);
+  renderPlanList();
+}
+
+async function loadCurrentPlan(){
+  try{
+    const cached=localStorage.getItem('plan_current_'+planPeriod);
+    if(cached){planItems=JSON.parse(cached);renderPlanList();}
+    const r=await api('getPlan',{period:planPeriod});
+    if(r.status==='ok'&&r.data){
+      planItems=r.data;
+      localStorage.setItem('plan_current_'+planPeriod,JSON.stringify(planItems));
+      renderPlanList();
+    }
+  }catch(e){}
+}
+
+async function savePlan(){
+  try{
+    await api('savePlan',{period:planPeriod,items:planItems});
+    localStorage.setItem('plan_current_'+planPeriod,JSON.stringify(planItems));
+    toast('✅ План збережено!',false,true);
+  }catch(e){toast('❌ '+e.message,true);}
+}
+
+function exportPlanPDF(){
+  if(!planItems.length){toast('Додайте позиції до плану',true);return;}
+  const periodLabel={week:'Тиждень',month:'Місяць'};
+  const statusLabel={planned:'Заплановано',inprogress:'В роботі',done:'Виконано ✓',urgent:'Позачергово ⚡'};
+  const statusColor={planned:'#E67E22',inprogress:'#3498DB',done:'#27AE60',urgent:'#C0392B'};
+  const now=new Date().toLocaleDateString('uk-UA',{day:'2-digit',month:'long',year:'numeric'});
+
+  const rows=planItems.map(item=>`
+    <tr>
+      <td style="padding:10px 12px;border-bottom:1px solid #eee">
+        <div style="font-weight:700;font-size:14px">${item.rozmir} ${item.typ}</div>
+        <div style="color:#666;font-size:12px">${[item.kolir,item.nazva].filter(Boolean).join(' · ')}</div>
+      </td>
+      <td style="padding:10px 12px;border-bottom:1px solid #eee;text-align:right;font-weight:700;font-size:15px">${Number(item.kil).toLocaleString('uk-UA')}</td>
+      <td style="padding:10px 12px;border-bottom:1px solid #eee;text-align:center">
+        <span style="background:${statusColor[item.status]||'#ccc'}20;color:${statusColor[item.status]||'#666'};padding:3px 10px;border-radius:20px;font-size:12px;font-weight:700">${statusLabel[item.status]||'—'}</span>
+      </td>
+      <td style="padding:10px 12px;border-bottom:1px solid #eee;font-size:12px;color:#666">${item.prod_note||'—'}</td>
+    </tr>`).join('');
+
+  const total=planItems.reduce((s,i)=>s+Number(i.kil||0),0);
+
+  const html=`<!DOCTYPE html><html lang="uk"><head>
+    <meta charset="UTF-8">
+    <title>CUPLUS — План виробництва</title>
+    <style>
+      body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Arial,sans-serif;margin:0;padding:32px;color:#1C1C1E;background:white}
+      .header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:28px;padding-bottom:20px;border-bottom:3px solid #1A3C34}
+      .logo{font-size:24px;font-weight:800;color:#1A3C34}
+      .logo-sub{font-size:13px;color:#666;margin-top:4px}
+      .meta{text-align:right;font-size:13px;color:#666}
+      .period-badge{display:inline-block;background:#1A3C34;color:white;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:700;margin-top:6px}
+      table{width:100%;border-collapse:collapse;margin-top:4px}
+      th{background:#1A3C34;color:white;padding:10px 12px;text-align:left;font-size:12px;font-weight:700;letter-spacing:.3px}
+      th:nth-child(2){text-align:right}th:nth-child(3){text-align:center}
+      .total-row td{padding:12px;font-weight:700;background:#EAF4EF;font-size:14px}
+      .footer{margin-top:24px;padding-top:16px;border-top:1px solid #eee;font-size:11px;color:#999;display:flex;justify-content:space-between}
+      @media print{body{padding:16px}button{display:none}}
+    </style>
+  </head><body>
+    <div class="header">
+      <div>
+        <div class="logo">📦 CUPLUS</div>
+        <div class="logo-sub">Паперові стакани — План виробництва</div>
+      </div>
+      <div class="meta">
+        <div>Сформовано: ${now}</div>
+        <div class="period-badge">${periodLabel[planPeriod]||planPeriod}</div>
+      </div>
+    </div>
+    <table>
+      <thead><tr>
+        <th>Продукт</th>
+        <th style="text-align:right">К-сть заготовок</th>
+        <th style="text-align:center">Статус</th>
+        <th>Примітка</th>
+      </tr></thead>
+      <tbody>${rows}
+        <tr class="total-row">
+          <td>📊 Всього позицій: ${planItems.length}</td>
+          <td style="text-align:right">${total.toLocaleString('uk-UA')}</td>
+          <td></td><td></td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="footer">
+      <span>CUPLUS — Хмельницький</span>
+      <span>Документ сформований автоматично</span>
+    </div>
+    <scr'+'ipt>window.onload=()=>window.print();</scr'+'ipt>
+  </body></html>`;
+
+  const w=window.open('','_blank','width=900,height=700');
+  w.document.write(html);
+  w.document.close();
+}
+
+// ── END PLANNING ─────────────────────────────────────────────────────────
+
+function toast(msg,err=false,ok=false){const t=document.getElementById('toast');t.textContent=msg;t.className='toast show'+(err?' err':ok?' ok_':'');setTimeout(()=>t.className='toast'+(err?' err':ok?' ok_':''),2800);}
+</script>
+</body>
+</html>
